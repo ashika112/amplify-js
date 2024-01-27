@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { LoggingError } from './LoggingError';
-import { AnalyticsValidationErrorCode, validationErrorMap } from './validation';
+import { LoggingValidationErrorCode, validationErrorMap } from './validation';
 
 /**
  * @internal
  */
 export function assertValidationError(
 	assertion: boolean,
-	name: AnalyticsValidationErrorCode,
+	name: LoggingValidationErrorCode,
 	message?: string
 ): asserts assertion {
 	const { message: defaultMessage, recoverySuggestion } =
