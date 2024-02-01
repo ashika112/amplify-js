@@ -18,17 +18,27 @@ import { resolveCredentials } from '../../../utils/resolveCredentials';
 // TODO: Fix this type import
 import { QueuedItem } from '@aws-amplify/core/dist/esm/utils/queuedStorage/types';
 
-const DEFAULT_LOG_LEVEL: LogLevel = 'INFO';
+import {
+	BASE_BUFFER_SIZE,
+	DEFAULT_LOG_LEVEL,
+	FLUSH_INTERVAL_IN_SECONDS,
+	LOCAL_STORE_SIZE_IN_MB,
+	MAX_BATCH_SIZE_IN_BYTES,
+	MAX_LOG_EVENTS_TIME_SPAN_IN_MILLISECONDS,
+	MAX_LOG_EVENT_SIZE,
+	MAX_NUMBER_OF_LOGS_IN_BATCH,
+} from '../utils/constants';
 
 let cloudWatchConfig: CloudWatchConfig;
 let queuedStorage: QueuedStorage;
 let cloudWatchSDKClient: CloudWatchLogsClient;
 let networkMonitor: NetworkConnectionMonitor;
+let syncing = false;
 
 const defaultConfig = {
 	enable: true,
-	localStoreMaxSizeInMB: 5,
-	flushIntervalInSeconds: 60,
+	localStoreMaxSizeInMB: LOCAL_STORE_SIZE_IN_MB,
+	flushIntervalInSeconds: FLUSH_INTERVAL_IN_SECONDS,
 	loggingConstraints: {
 		defaultLogLevel: DEFAULT_LOG_LEVEL,
 	},
@@ -85,17 +95,12 @@ export const cloudWatchProvider: CloudWatchProvider = {
 		// TODO: call startSyncIfNotInProgress
 	},
 
-	// TODO: Need a module to tie log and flushLogs together. log -> storage -> buffer -> flushLogs
-	// EX: startSyncIfNotInProgress
-
 	/**
 	 * send locally persisted logs to CloudWatch on demand
 	 * @internal
 	 */
 	flushLogs: async (): Promise<void> => {
-		// TODO: Get these messages from buffer and not storage
-		const batchedLogs = await queuedStorage.peekAll();
-		await _sendToCloudWatch(batchedLogs);
+		await _startSyncIfNotInProgress();
 		return Promise.resolve();
 	},
 	/**
@@ -114,28 +119,99 @@ export const cloudWatchProvider: CloudWatchProvider = {
 	},
 };
 
-async function _sendToCloudWatch(batchedLogs: QueuedItem[]) {
+const truncateString = (str: string) => {
+	const maxLength = MAX_LOG_EVENT_SIZE - 8;
+	if (str.length > maxLength) {
+		return str.slice(0, maxLength);
+	}
+	return str;
+};
+
+export const convertToInputLogEvent = (
+	queuedItem: QueuedItem
+): InputLogEvent => {
+	return {
+		// Truncate message so that logEvent size is less than 256 KB
+		message: truncateString(queuedItem.content),
+		timestamp: Date.parse(queuedItem.timestamp),
+	};
+};
+
+export const isLogBatchReady = (
+	logEvents: InputLogEvent[],
+	currentLogEvent: InputLogEvent,
+	totalBatchSize: number
+): boolean => {
+	const isBatchSizeExceeded = totalBatchSize >= MAX_BATCH_SIZE_IN_BYTES;
+	const isLogCountExceeded = logEvents.length >= MAX_NUMBER_OF_LOGS_IN_BATCH;
+	const isTimeSpanExceeded =
+		logEvents.length > 1 &&
+		(currentLogEvent.timestamp ?? 0) - (logEvents[0].timestamp ?? 0) >=
+			MAX_LOG_EVENTS_TIME_SPAN_IN_MILLISECONDS;
+
+	return isBatchSizeExceeded || isLogCountExceeded || isTimeSpanExceeded;
+};
+
+export const _startSyncIfNotInProgress = async () => {
+	if (!syncing) {
+		syncing = true;
+
+		const queuedItems = await queuedStorage.peekAll();
+		let logEvents: InputLogEvent[] = [];
+		let logQueues: QueuedItem[] = [];
+		let totalBatchSize = 0;
+
+		if (!queuedItems.length) {
+			return;
+		}
+
+		for (const currentItem of queuedItems) {
+			const currentLogEvent: InputLogEvent =
+				convertToInputLogEvent(currentItem);
+			const currentLogSize =
+				(currentLogEvent.message?.length ?? 0) + BASE_BUFFER_SIZE;
+
+			if (isLogBatchReady(logEvents, currentLogEvent, totalBatchSize)) {
+				// call sendToCloudWatch && delete from storage
+				totalBatchSize = 0;
+				logEvents = [];
+				logQueues = [];
+			}
+			totalBatchSize += currentLogSize;
+			logEvents.push(currentLogEvent);
+			logQueues.push(currentItem);
+		}
+
+		syncing = false;
+	}
+};
+
+async function _sendToCloudWatch(
+	logEvents: InputLogEvent[],
+	logQueues: QueuedItem[]
+) {
 	const { logGroupName } = cloudWatchConfig;
 	// TODO: how can cx give their own logStreamName?
 	const logStreamName = await getDefaultStreamName();
 	const logBatch: PutLogEventsCommandInput = {
-		logEvents: convertBufferLogsToCWLogs(batchedLogs),
+		logEvents,
 		logGroupName,
 		logStreamName,
 	};
-	if (sdkClientConstraintsSatisfied(logBatch)) {
-		networkMonitor.enableNetworkMonitoringFor(async () => {
-			let rejectedLogEventsInfo;
-			try {
-				rejectedLogEventsInfo = (
-					await cloudWatchSDKClient.send(new PutLogEventsCommand(logBatch))
-				).rejectedLogEventsInfo;
-				await handleRejectedLogEvents(batchedLogs, rejectedLogEventsInfo);
-			} catch (e) {
-				// TODO: Should we log to console or dispatch a hub event?
-			}
-		});
-	}
+
+	networkMonitor.enableNetworkMonitoringFor(async () => {
+		let rejectedLogEventsInfo;
+		try {
+			rejectedLogEventsInfo = (
+				await cloudWatchSDKClient.send(new PutLogEventsCommand(logBatch))
+			).rejectedLogEventsInfo;
+			await handleRejectedLogEvents(logQueues, rejectedLogEventsInfo);
+		} catch (e) {
+			// TODO: Should we log to console or dispatch a hub event?
+		}
+	});
+
+	//TODO: delete from storage
 }
 
 // Exporting this function for testing purposes
@@ -162,24 +238,4 @@ export async function handleRejectedLogEvents(
 function _isLoggable(log: LogParams): boolean {
 	// TODO: Log filtering function
 	return true;
-}
-
-// TODO: Add the constraints for log batches based on sdk API
-// https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_PutLogEvents.html
-function sdkClientConstraintsSatisfied(
-	logBatch: PutLogEventsCommandInput
-): Boolean {
-	return true;
-}
-
-// TODO: Input should be buffered logs type not QueuedItem from storage
-function convertBufferLogsToCWLogs(
-	bufferedLogs: QueuedItem[]
-): InputLogEvent[] {
-	return bufferedLogs.map(bufferedLog => {
-		return {
-			message: bufferedLog.content,
-			timestamp: Date.parse(bufferedLog.timestamp),
-		};
-	});
 }
