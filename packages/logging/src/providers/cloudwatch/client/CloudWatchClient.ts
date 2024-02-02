@@ -23,11 +23,8 @@ import {
 	DEFAULT_LOG_LEVEL,
 	FLUSH_INTERVAL_IN_SECONDS,
 	LOCAL_STORE_SIZE_IN_MB,
-	MAX_BATCH_SIZE_IN_BYTES,
-	MAX_LOG_EVENTS_TIME_SPAN_IN_MILLISECONDS,
-	MAX_LOG_EVENT_SIZE,
-	MAX_NUMBER_OF_LOGS_IN_BATCH,
 } from '../utils/constants';
+import { convertToInputLogEvent, isLogBatchReady } from '../utils/utils';
 
 let cloudWatchConfig: CloudWatchConfig;
 let queuedStorage: QueuedStorage;
@@ -119,39 +116,6 @@ export const cloudWatchProvider: CloudWatchProvider = {
 	},
 };
 
-const truncateString = (str: string) => {
-	const maxLength = MAX_LOG_EVENT_SIZE - 8;
-	if (str.length > maxLength) {
-		return str.slice(0, maxLength);
-	}
-	return str;
-};
-
-export const convertToInputLogEvent = (
-	queuedItem: QueuedItem
-): InputLogEvent => {
-	return {
-		// Truncate message so that logEvent size is less than 256 KB
-		message: truncateString(queuedItem.content),
-		timestamp: Date.parse(queuedItem.timestamp),
-	};
-};
-
-export const isLogBatchReady = (
-	logEvents: InputLogEvent[],
-	currentLogEvent: InputLogEvent,
-	totalBatchSize: number
-): boolean => {
-	const isBatchSizeExceeded = totalBatchSize >= MAX_BATCH_SIZE_IN_BYTES;
-	const isLogCountExceeded = logEvents.length >= MAX_NUMBER_OF_LOGS_IN_BATCH;
-	const isTimeSpanExceeded =
-		logEvents.length > 1 &&
-		(currentLogEvent.timestamp ?? 0) - (logEvents[0].timestamp ?? 0) >=
-			MAX_LOG_EVENTS_TIME_SPAN_IN_MILLISECONDS;
-
-	return isBatchSizeExceeded || isLogCountExceeded || isTimeSpanExceeded;
-};
-
 export const _startSyncIfNotInProgress = async () => {
 	if (!syncing) {
 		syncing = true;
@@ -210,8 +174,6 @@ async function _sendToCloudWatch(
 			// TODO: Should we log to console or dispatch a hub event?
 		}
 	});
-
-	//TODO: delete from storage
 }
 
 // Exporting this function for testing purposes
