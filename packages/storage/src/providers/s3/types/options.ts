@@ -117,6 +117,30 @@ export type UploadDataOptions = WriteOptions &
 		metadata?: Record<string, string>;
 	};
 
+export type UploadDataOptionsNew = CommonOptions &
+	TransferOptions & {
+		/**
+		 * The default content-disposition header value of the file when downloading it.
+		 * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Disposition
+		 */
+		contentDisposition?: string;
+		/**
+		 * The default content-encoding header value of the file when downloading it.
+		 * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Encoding
+		 */
+		contentEncoding?: string;
+		/**
+		 * The default content-type header value of the file when downloading it.
+		 * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type
+		 */
+		contentType?: string;
+		/**
+		 * The user-defined metadata for the object uploaded to S3.
+		 * @see https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingMetadata.html#UserMetadata
+		 */
+		metadata?: Record<string, string>;
+	};
+
 export type CopySourceOptions = ReadOptions & {
 	key: string;
 };

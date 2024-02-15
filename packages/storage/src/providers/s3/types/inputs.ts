@@ -21,6 +21,7 @@ import {
 	RemoveOptions,
 	UploadDataOptions,
 } from '../types';
+import { UploadDataOptionsNew } from './options';
 
 // TODO: support use accelerate endpoint option
 /**
@@ -65,4 +66,4 @@ export type DownloadDataInput = StorageDownloadDataInput<DownloadDataOptions>;
 /**
  * Input type for S3 uploadData API.
  */
-export type UploadDataInput = StorageUploadDataInput<UploadDataOptions>;
+export type UploadDataInput = StorageUploadDataInput<UploadDataOptionsNew>;

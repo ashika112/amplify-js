@@ -17,7 +17,7 @@ import { getStorageUserAgentValue } from '../../utils/userAgent';
  */
 export const putObjectJob =
 	(
-		{ options: uploadDataOptions, key, data }: UploadDataInput,
+		{ options: uploadDataOptions, path: key, data }: UploadDataInput,
 		abortSignal: AbortSignal,
 		totalLength?: number,
 	) =>
@@ -25,7 +25,7 @@ export const putObjectJob =
 		const { bucket, keyPrefix, s3Config, isObjectLockEnabled } =
 			await resolveS3ConfigAndInput(Amplify, uploadDataOptions);
 
-		const finalKey = keyPrefix + key;
+		// const finalKey = keyPrefix + key;
 		const {
 			contentDisposition,
 			contentEncoding,
@@ -43,7 +43,7 @@ export const putObjectJob =
 			},
 			{
 				Bucket: bucket,
-				Key: finalKey,
+				Key: key,
 				Body: data,
 				ContentType: contentType,
 				ContentDisposition: contentDisposition,
