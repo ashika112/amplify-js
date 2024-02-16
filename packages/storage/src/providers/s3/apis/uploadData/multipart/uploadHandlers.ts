@@ -36,7 +36,7 @@ import { getDataChunker } from './getDataChunker';
  * @internal
  */
 export const getMultipartUploadHandlers = (
-	{ options: uploadDataOptions, path: key, data }: UploadDataInput,
+	{ options: uploadDataOptions, key, data }: UploadDataInput,
 	size?: number,
 ) => {
 	let resolveCallback: ((value: S3Item) => void) | undefined;
@@ -70,7 +70,7 @@ export const getMultipartUploadHandlers = (
 		abortController = new AbortController();
 		isAbortSignalFromPause = false;
 
-		const accessLevel = "guest"
+		const accessLevel = 'guest';
 		const {
 			contentDisposition,
 			contentEncoding,
@@ -109,7 +109,7 @@ export const getMultipartUploadHandlers = (
 					bucket: resolvedBucket!,
 					size,
 					key,
-				})
+			  })
 			: undefined;
 
 		const dataChunker = getDataChunker(data, size);

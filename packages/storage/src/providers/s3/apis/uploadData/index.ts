@@ -10,6 +10,7 @@ import { DEFAULT_PART_SIZE, MAX_OBJECT_SIZE } from '../../utils/constants';
 import { byteLength } from './byteLength';
 import { putObjectJob } from './putObjectJob';
 import { getMultipartUploadHandlers } from './multipart';
+import { UploadDataInputPath } from '../../types/inputs';
 
 /**
  * Upload data to specified S3 object. By default, it uses single PUT operation to upload if the data is less than 5MB.
@@ -59,7 +60,9 @@ import { getMultipartUploadHandlers } from './multipart';
  * await uploadTask.result;
  * ```
  */
-export const uploadData = (input: UploadDataInput): UploadDataOutput => {
+export const uploadData = (
+	input: UploadDataInput | UploadDataInputPath,
+): UploadDataOutput => {
 	const { data } = input;
 
 	const dataByteLength = byteLength(data);
@@ -80,7 +83,7 @@ export const uploadData = (input: UploadDataInput): UploadDataOutput => {
 		});
 	} else {
 		const { multipartUploadJob, onPause, onResume, onCancel } =
-			getMultipartUploadHandlers(input, dataByteLength);
+			getMultipartUploadHandlers(input as UploadDataInput, dataByteLength);
 
 		return createUploadTask({
 			isMultipartUpload: true,
