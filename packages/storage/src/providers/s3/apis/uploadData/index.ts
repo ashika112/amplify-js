@@ -6,11 +6,11 @@ import { createUploadTask } from '../../utils';
 import { assertValidationError } from '../../../../errors/utils/assertValidationError';
 import { StorageValidationErrorCode } from '../../../../errors/types/validation';
 import { DEFAULT_PART_SIZE, MAX_OBJECT_SIZE } from '../../utils/constants';
+import { UploadDataInputPath } from '../../types/inputs';
 
 import { byteLength } from './byteLength';
 import { putObjectJob } from './putObjectJob';
 import { getMultipartUploadHandlers } from './multipart';
-import { UploadDataInputPath } from '../../types/inputs';
 
 /**
  * Upload data to specified S3 object. By default, it uses single PUT operation to upload if the data is less than 5MB.
