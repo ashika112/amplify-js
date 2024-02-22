@@ -30,7 +30,7 @@ export interface StorageItem {
 
 export interface StorageItemPath {
 	/**
-	 * Key of the object
+	 * Path of the object
 	 */
 	path: string;
 	/**

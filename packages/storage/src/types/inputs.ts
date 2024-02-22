@@ -9,17 +9,17 @@ import {
 
 export interface StorageOperationInput<Options extends StorageOptions> {
 	key: string;
-	path?: never;
 	options?: Options;
 }
 
-type PathOptions = { accessLevel?: never }
+// interface PathOptions {
+// 	accessLevel?: never;
+// }
 
-export type StorageOperationInputPath<Options extends PathOptions> = {
-	key?: never;
+export interface StorageOperationInputPath<Options> {
 	path: string | ((id: string) => string);
 	options?: Options;
-};
+}
 
 export type StorageGetPropertiesInput<Options extends StorageOptions> =
 	StorageOperationInput<Options>;
@@ -47,7 +47,7 @@ export type StorageUploadDataInput<Options extends StorageOptions> =
 		data: StorageUploadDataPayload;
 	};
 
-export type StorageUploadDataInputPath<Options extends PathOptions> =
+export type StorageUploadDataInputPath<Options> =
 	StorageOperationInputPath<Options> & {
 		data: StorageUploadDataPayload;
 	};

@@ -18,14 +18,13 @@ import { UploadDataInputPath } from '../../types/inputs';
  */
 export const putObjectJob =
 	(
-		uploadInput: UploadDataInput | UploadDataInputPath,
+		uploadInput: UploadDataInput,
 		abortSignal: AbortSignal,
 		totalLength?: number,
 	) =>
 	async (): Promise<S3Item | S3ItemPath> => {
 		const { options: uploadDataOptions, data } = uploadInput;
 
-		// eslint-disable-next-line unused-imports/no-unused-vars
 		const { bucket, keyPrefix, s3Config, isObjectLockEnabled } =
 			await resolveS3ConfigAndInput(Amplify, uploadDataOptions);
 		let finalKey: string;
@@ -35,7 +34,7 @@ export const putObjectJob =
 		} else {
 			finalKey = keyPrefix + uploadInput.key;
 		}
-		// const finalKey = keyPrefix + key;
+
 		const {
 			contentDisposition,
 			contentEncoding,

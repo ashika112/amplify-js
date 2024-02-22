@@ -1,6 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import { StrictUnion } from '@aws-amplify/core/internals/utils';
+
 import {
 	StorageCopyInput,
 	StorageDownloadDataInput,
@@ -74,4 +76,6 @@ export type UploadDataInputPath =
 /**
  * Input type for S3 uploadData API.
  */
-export type UploadDataInput = StorageUploadDataInput<UploadDataOptions>;
+export type UploadDataInput = StrictUnion<
+	StorageUploadDataInput<UploadDataOptions> | UploadDataInputPath
+>;

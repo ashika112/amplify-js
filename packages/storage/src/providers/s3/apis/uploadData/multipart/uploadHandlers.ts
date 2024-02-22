@@ -36,7 +36,7 @@ import { getDataChunker } from './getDataChunker';
  * @internal
  */
 export const getMultipartUploadHandlers = (
-	{ options: uploadDataOptions, key, data }: UploadDataInput,
+	{ options: uploadDataOptions, key = '', data }: UploadDataInput,
 	size?: number,
 ) => {
 	let resolveCallback: ((value: S3Item) => void) | undefined;
@@ -109,7 +109,7 @@ export const getMultipartUploadHandlers = (
 					bucket: resolvedBucket!,
 					size,
 					key,
-			  })
+				})
 			: undefined;
 
 		const dataChunker = getDataChunker(data, size);

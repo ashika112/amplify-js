@@ -117,7 +117,7 @@ export type UploadDataOptions = WriteOptions &
 		metadata?: Record<string, string>;
 	};
 
-export type UploadDataOptionsNew = {accessLevel?: never} & CommonOptions &
+export type UploadDataOptionsNew = CommonOptions &
 	TransferOptions & {
 		/**
 		 * The default content-disposition header value of the file when downloading it.
