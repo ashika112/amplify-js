@@ -11,11 +11,6 @@ export interface StorageOperationInput<Options extends StorageOptions> {
 	key: string;
 	options?: Options;
 }
-
-// interface PathOptions {
-// 	accessLevel?: never;
-// }
-
 export interface StorageOperationInputPath<Options> {
 	path: string | ((id: string) => string);
 	options?: Options;
@@ -42,7 +37,7 @@ export type StorageGetUrlInput<Options extends StorageOptions> =
 export type StorageDownloadDataInput<Options extends StorageOptions> =
 	StorageOperationInput<Options>;
 
-export type StorageUploadDataInput<Options extends StorageOptions> =
+export type StorageUploadDataInputKey<Options extends StorageOptions> =
 	StorageOperationInput<Options> & {
 		data: StorageUploadDataPayload;
 	};

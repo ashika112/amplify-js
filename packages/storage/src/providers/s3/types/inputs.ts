@@ -10,7 +10,7 @@ import {
 	StorageGetUrlInput,
 	StorageListInput,
 	StorageRemoveInput,
-	StorageUploadDataInput,
+	StorageUploadDataInputKey,
 	StorageUploadDataInputPath,
 } from '../../../types';
 import {
@@ -68,7 +68,12 @@ export type RemoveInput = StorageRemoveInput<RemoveOptions>;
 export type DownloadDataInput = StorageDownloadDataInput<DownloadDataOptions>;
 
 /**
- * Input type for S3 uploadData API.
+ * Input type for S3 uploadData API with key.
+ */
+export type UploadDataInputKey = StorageUploadDataInputKey<UploadDataOptions>;
+
+/**
+ * Input type for S3 uploadData API with path.
  */
 export type UploadDataInputPath =
 	StorageUploadDataInputPath<UploadDataOptionsNew>;
@@ -77,5 +82,5 @@ export type UploadDataInputPath =
  * Input type for S3 uploadData API.
  */
 export type UploadDataInput = StrictUnion<
-	StorageUploadDataInput<UploadDataOptions> | UploadDataInputPath
+	UploadDataInputKey | UploadDataInputPath
 >;

@@ -13,10 +13,10 @@ export {
 	StorageGetPropertiesInput,
 	StorageRemoveInput,
 	StorageDownloadDataInput,
-	StorageUploadDataInput,
 	StorageCopyInput,
 	StorageGetUrlInput,
 	StorageUploadDataPayload,
+	StorageUploadDataInputKey,
 	StorageUploadDataInputPath,
 } from './inputs';
 export {

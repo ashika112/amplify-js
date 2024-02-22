@@ -6,7 +6,6 @@ import { createUploadTask } from '../../utils';
 import { assertValidationError } from '../../../../errors/utils/assertValidationError';
 import { StorageValidationErrorCode } from '../../../../errors/types/validation';
 import { DEFAULT_PART_SIZE, MAX_OBJECT_SIZE } from '../../utils/constants';
-import { UploadDataInputPath } from '../../types/inputs';
 
 import { byteLength } from './byteLength';
 import { putObjectJob } from './putObjectJob';
@@ -60,9 +59,7 @@ import { getMultipartUploadHandlers } from './multipart';
  * await uploadTask.result;
  * ```
  */
-export const uploadData = (
-	input: UploadDataInput | UploadDataInputPath,
-): UploadDataOutput => {
+export const uploadData = (input: UploadDataInput): UploadDataOutput => {
 	const { data } = input;
 
 	const dataByteLength = byteLength(data);
@@ -83,7 +80,7 @@ export const uploadData = (
 		});
 	} else {
 		const { multipartUploadJob, onPause, onResume, onCancel } =
-			getMultipartUploadHandlers(input as UploadDataInput, dataByteLength);
+			getMultipartUploadHandlers(input, dataByteLength);
 
 		return createUploadTask({
 			isMultipartUpload: true,
