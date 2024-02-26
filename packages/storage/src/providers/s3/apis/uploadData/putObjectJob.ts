@@ -4,12 +4,13 @@
 import { Amplify } from '@aws-amplify/core';
 import { StorageAction } from '@aws-amplify/core/internals/utils';
 
-import { UploadDataInput } from '../../types';
 import { calculateContentMd5, resolveS3ConfigAndInput } from '../../utils';
 import { Item as S3Item, ItemPath as S3ItemPath } from '../../types/outputs';
 import { putObject } from '../../utils/client';
 import { getStorageUserAgentValue } from '../../utils/userAgent';
-import { UploadDataInputPath } from '../../types/inputs';
+import { UploadDataInput } from '../../types/inputs';
+
+import { validateUploadInput } from './utils';
 
 /**
  * Get a function the returns a promise to call putObject API to S3.
@@ -27,13 +28,8 @@ export const putObjectJob =
 
 		const { bucket, keyPrefix, s3Config, isObjectLockEnabled } =
 			await resolveS3ConfigAndInput(Amplify, uploadDataOptions);
-		let finalKey: string;
-		if ('path' in uploadInput) {
-			const { path } = uploadInput as UploadDataInputPath;
-			finalKey = typeof path === 'string' ? path : path('');
-		} else {
-			finalKey = keyPrefix + uploadInput.key;
-		}
+
+		const { inputType, finalKey } = validateUploadInput(uploadInput, keyPrefix);
 
 		const {
 			contentDisposition,
@@ -64,23 +60,15 @@ export const putObjectJob =
 			},
 		);
 
-		if ('path' in uploadInput) {
-			return {
-				path: finalKey,
-				eTag,
-				versionId,
-				contentType,
-				metadata,
-				size: totalLength,
-			};
-		}
-
-		return {
-			key: finalKey,
+		const result = {
 			eTag,
 			versionId,
 			contentType,
 			metadata,
 			size: totalLength,
 		};
+
+		return inputType === 'path'
+			? { ...result, path: finalKey }
+			: { ...result, key: finalKey };
 	};

@@ -53,7 +53,8 @@ export type GetUrlOutput = StorageGetUrlOutput;
 /**
  * Output type for S3 uploadData API.
  */
-export type UploadDataOutput = UploadTask<Item | ItemPath>;
+export type UploadDataOutput = UploadTask<Item>;
+export type UploadDataOutputPath = UploadTask<ItemPath>;
 
 /**
  * Output type for S3 getProperties API.
