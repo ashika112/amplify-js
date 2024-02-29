@@ -66,7 +66,11 @@ interface UploadData {
 	(input: UploadDataInputPath): UploadDataOutputPath;
 }
 
-export const uploadData: UploadData = (input: UploadDataInput): any => {
+export const uploadData: UploadData = <
+	Output extends UploadDataOutput | UploadDataOutputPath,
+>(
+	input: UploadDataInput,
+): Output => {
 	const { data } = input;
 
 	const dataByteLength = byteLength(data);
@@ -84,7 +88,7 @@ export const uploadData: UploadData = (input: UploadDataInput): any => {
 			onCancel: (message?: string) => {
 				abortController.abort(message);
 			},
-		});
+		}) as Output;
 	} else {
 		const { multipartUploadJob, onPause, onResume, onCancel } =
 			getMultipartUploadHandlers(input, dataByteLength);
@@ -97,6 +101,6 @@ export const uploadData: UploadData = (input: UploadDataInput): any => {
 			},
 			onPause,
 			onResume,
-		});
+		}) as Output;
 	}
 };

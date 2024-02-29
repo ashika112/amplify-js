@@ -9,8 +9,8 @@ import { Item as S3Item, ItemPath as S3ItemPath } from '../../types/outputs';
 import { putObject } from '../../utils/client';
 import { getStorageUserAgentValue } from '../../utils/userAgent';
 import { UploadDataInput } from '../../types/inputs';
-
-import { validateUploadInput } from './utils';
+import { validateStorageOperationInput } from '../../utils/utils';
+import { STORAGE_INPUT_TYPES } from '../../utils/constants';
 
 /**
  * Get a function the returns a promise to call putObject API to S3.
@@ -26,10 +26,23 @@ export const putObjectJob =
 	async (): Promise<S3Item | S3ItemPath> => {
 		const { options: uploadDataOptions, data } = uploadInput;
 
-		const { bucket, keyPrefix, s3Config, isObjectLockEnabled } =
-			await resolveS3ConfigAndInput(Amplify, uploadDataOptions);
+		const {
+			bucket,
+			keyPrefix,
+			s3Config,
+			isObjectLockEnabled,
+			identityId,
+			userSub,
+		} = await resolveS3ConfigAndInput(Amplify, uploadDataOptions);
 
-		const { inputType, finalKey } = validateUploadInput(uploadInput, keyPrefix);
+		const { inputType, objectKey } = validateStorageOperationInput(
+			uploadInput,
+			identityId,
+			userSub,
+		);
+
+		const finalKey =
+			inputType === STORAGE_INPUT_TYPES.KEY ? keyPrefix + objectKey : objectKey;
 
 		const {
 			contentDisposition,
@@ -68,7 +81,7 @@ export const putObjectJob =
 			size: totalLength,
 		};
 
-		return inputType === 'path'
-			? { ...result, path: finalKey }
-			: { ...result, key: finalKey };
+		return inputType === STORAGE_INPUT_TYPES.KEY
+			? { key: objectKey, ...result }
+			: { path: finalKey, ...result };
 	};

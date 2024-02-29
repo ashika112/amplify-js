@@ -34,18 +34,6 @@ export interface ItemPath extends StorageItemPath {
 	 */
 	contentType?: string;
 }
-
-export interface ItemPath extends StorageItemPath {
-	/**
-	 * VersionId used to reference a specific version of the object.
-	 */
-	versionId?: string;
-	/**
-	 * A standard MIME type describing the format of the object data.
-	 */
-	contentType?: string;
-}
-
 /**
  * type for S3 list item.
  */
@@ -55,8 +43,9 @@ export type ListOutputItem = Omit<StorageItem, 'metadata'>;
  * Output type for S3 downloadData API.
  */
 export type DownloadDataOutput = DownloadTask<StorageDownloadDataOutput<Item>>;
-export type DownloadDataOutputPath = DownloadTask<StorageDownloadDataOutput<ItemPath>>;
-
+export type DownloadDataOutputPath = DownloadTask<
+	StorageDownloadDataOutput<ItemPath>
+>;
 
 /**
  * Output type for S3 getUrl API.

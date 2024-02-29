@@ -20,7 +20,7 @@ export const validateUploadInput = (
 	let finalKey;
 	if (isInputWithPath(uploadInput)) {
 		const { path } = uploadInput;
-		finalKey = typeof path === 'string' ? path : path('');
+		finalKey = typeof path === 'string' ? path : path({});
 
 		return { inputType: 'path', finalKey };
 	} else if (isInputWithKey(uploadInput)) {

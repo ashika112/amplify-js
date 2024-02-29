@@ -126,6 +126,6 @@ const downloadDataJob =
 		};
 
 		return inputType === STORAGE_INPUT_TYPES.KEY
-			? { key: finalKey, ...result }
+			? { key: objectKey, ...result }
 			: { path: finalKey, ...result };
 	};
