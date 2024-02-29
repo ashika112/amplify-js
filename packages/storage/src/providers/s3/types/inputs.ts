@@ -6,11 +6,12 @@ import { StrictUnion } from '@aws-amplify/core/internals/utils';
 import {
 	StorageCopyInput,
 	StorageDownloadDataInput,
+	StorageDownloadDataInputPath,
 	StorageGetPropertiesInput,
 	StorageGetUrlInput,
 	StorageListInput,
 	StorageRemoveInput,
-	StorageUploadDataInputKey,
+	StorageUploadDataInput,
 	StorageUploadDataInputPath,
 } from '../../../types';
 import {
@@ -25,7 +26,7 @@ import {
 	UploadDataOptions,
 } from '../types';
 
-import { UploadDataOptionsNew } from './options';
+import { DownloadDataOptionsPath, UploadDataOptionsNew } from './options';
 
 // TODO: support use accelerate endpoint option
 /**
@@ -65,12 +66,18 @@ export type RemoveInput = StorageRemoveInput<RemoveOptions>;
 /**
  * Input type for S3 downloadData API.
  */
-export type DownloadDataInput = StorageDownloadDataInput<DownloadDataOptions>;
+export type DownloadDataInputKey =
+	StorageDownloadDataInput<DownloadDataOptions>;
+export type DownloadDataInputPath =
+	StorageDownloadDataInputPath<DownloadDataOptionsPath>;
+export type DownloadDataInput = StrictUnion<
+	DownloadDataInputKey | DownloadDataInputPath
+>;
 
 /**
  * Input type for S3 uploadData API with key.
  */
-export type UploadDataInputKey = StorageUploadDataInputKey<UploadDataOptions>;
+export type UploadDataInputKey = StorageUploadDataInput<UploadDataOptions>;
 
 /**
  * Input type for S3 uploadData API with path.

@@ -27,7 +27,6 @@ export interface StorageItem {
 	 */
 	metadata?: Record<string, string>;
 }
-
 export interface StorageItemPath {
 	/**
 	 * Path of the object
@@ -53,7 +52,9 @@ export interface StorageItemPath {
 	metadata?: Record<string, string>;
 }
 
-export type StorageDownloadDataOutput<T extends StorageItem> = T & {
+export type StorageDownloadDataOutput<
+	Item extends StorageItem | StorageItemPath,
+> = Item & {
 	body: ResponseBodyMixin;
 };
 

@@ -7,12 +7,23 @@ import {
 	StorageOptions,
 } from './options';
 
+export interface StorageOperationInputKey {
+	key: string;
+}
+export interface StorageOperationInputPath {
+	path:
+		| string
+		| (({
+				identityId,
+				userSub,
+		  }: {
+				identityId?: string;
+				userSub?: string;
+		  }) => string);
+}
+
 export interface StorageOperationInput<Options extends StorageOptions> {
 	key: string;
-	options?: Options;
-}
-export interface StorageOperationInputPath<Options> {
-	path: string | ((id: string) => string);
 	options?: Options;
 }
 
@@ -37,15 +48,19 @@ export type StorageGetUrlInput<Options extends StorageOptions> =
 export type StorageDownloadDataInput<Options extends StorageOptions> =
 	StorageOperationInput<Options>;
 
-export type StorageUploadDataInputKey<Options extends StorageOptions> =
+export type StorageDownloadDataInputPath<Options> =
+	StorageOperationInputPath & { options?: Options };
+
+export type StorageUploadDataInput<Options extends StorageOptions> =
 	StorageOperationInput<Options> & {
 		data: StorageUploadDataPayload;
 	};
 
-export type StorageUploadDataInputPath<Options> =
-	StorageOperationInputPath<Options> & {
-		data: StorageUploadDataPayload;
-	};
+export type StorageUploadDataInputPath<Options> = StorageOperationInputPath & {
+	options?: Options;
+} & {
+	data: StorageUploadDataPayload;
+};
 
 export interface StorageCopyInput<
 	SourceOptions extends StorageOptions,
