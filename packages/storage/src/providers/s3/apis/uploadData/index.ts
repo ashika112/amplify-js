@@ -6,6 +6,8 @@ import { createUploadTask } from '../../utils';
 import { assertValidationError } from '../../../../errors/utils/assertValidationError';
 import { StorageValidationErrorCode } from '../../../../errors/types/validation';
 import { DEFAULT_PART_SIZE, MAX_OBJECT_SIZE } from '../../utils/constants';
+import { UploadDataInputKey, UploadDataInputPath } from '../../types/inputs';
+import { UploadDataOutputPath } from '../../types/outputs';
 
 import { byteLength } from './byteLength';
 import { putObjectJob } from './putObjectJob';
@@ -59,7 +61,16 @@ import { getMultipartUploadHandlers } from './multipart';
  * await uploadTask.result;
  * ```
  */
-export const uploadData = (input: UploadDataInput): UploadDataOutput => {
+interface UploadData {
+	(input: UploadDataInputKey): UploadDataOutput;
+	(input: UploadDataInputPath): UploadDataOutputPath;
+}
+
+export const uploadData: UploadData = <
+	Output extends UploadDataOutput | UploadDataOutputPath,
+>(
+	input: UploadDataInput,
+): Output => {
 	const { data } = input;
 
 	const dataByteLength = byteLength(data);
@@ -77,7 +88,7 @@ export const uploadData = (input: UploadDataInput): UploadDataOutput => {
 			onCancel: (message?: string) => {
 				abortController.abort(message);
 			},
-		});
+		}) as Output;
 	} else {
 		const { multipartUploadJob, onPause, onResume, onCancel } =
 			getMultipartUploadHandlers(input, dataByteLength);
@@ -90,6 +101,6 @@ export const uploadData = (input: UploadDataInput): UploadDataOutput => {
 			},
 			onPause,
 			onResume,
-		});
+		}) as Output;
 	}
 };
