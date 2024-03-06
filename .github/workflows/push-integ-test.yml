@@ -8,7 +8,7 @@ concurrency:
 on:
   push:
     branches:
-      - feat/gen2-downloadData
+      - gen2-integTest
 
 jobs:
   e2e:
