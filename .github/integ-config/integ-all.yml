@@ -736,7 +736,7 @@ tests:
     framework: react
     category: storage
     sample_name: [storage-gen2]
-    spec: gen2-storage
+    spec: storage-gen2
     browser: *minimal_browser_list
 
   # # INAPPMESSAGING
