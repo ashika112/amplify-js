@@ -90,6 +90,18 @@ export type ListLocations = (
 	input?: ListLocationsInput,
 ) => Promise<ListLocationsOutput>;
 
+export type ListPaths = (input?: ListLocationsInput) => Promise<{
+	locations: {
+		type: 'PREFIX';
+		permission: string[];
+		scope: {
+			bucketName: string;
+			path: string;
+		};
+	}[];
+	nextToken?: string;
+}>;
+
 export type GetLocationCredentialsInput = CredentialsLocation;
 export type GetLocationCredentialsOutput = LocationCredentials;
 
